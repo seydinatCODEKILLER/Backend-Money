@@ -17,5 +17,17 @@
   "bugs": {
     "url": "https://github.com/seydinatCODEKILLER/Backend-Money/issues"
   },
-  "homepage": "https://github.com/seydinatCODEKILLER/Backend-Money#readme"
+  "homepage": "https://github.com/seydinatCODEKILLER/Backend-Money#readme",
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "prisma": "^6.18.0"
+  }
 }
