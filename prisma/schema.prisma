@@ -1,14 +1,174 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ======================================
+//  Prisma Schema for MoneyWise
+//  Backend: Node.js + Hono + Prisma + MongoDB
+// ======================================
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================
+// MODELS
+// ==============================
+
+// 👤 Utilisateur
+model User {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  nom            String
+  prenom         String
+  role           Role            @default(USER)
+  email          String          @unique
+  password       String
+  avatarUrl      String?
+  status         UserStatus      @default(ACTIVE)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relations
+  transactions   Transaction[]
+  categories     Category[]
+  resetTokens    PasswordResetToken[]
+  budgetAlerts   BudgetAlert[]
+
+  // Index
+  @@index([status])
+  @@map("users")
+}
+
+// 💰 Transactions (revenus / dépenses)
+model Transaction {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String            @db.ObjectId
+  type         TransactionType
+  amount       Float
+  category     Category?         @relation(fields: [categoryId], references: [id])
+  categoryId   String?           @db.ObjectId
+  description  String?
+  date         DateTime          @default(now())
+  status       RecordStatus      @default(ACTIVE)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([userId, categoryId])
+  @@index([userId, status])
+  @@map("transactions")
+}
+
+// 🏷️ Catégories personnalisées
+model Category {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String            @db.ObjectId
+  name         String
+  type         TransactionType
+  color        String?
+  icon         String?
+  isDefault    Boolean           @default(false)
+  budgetLimit  Float?
+  status       RecordStatus      @default(ACTIVE)
+  transactions Transaction[]
+  budgetAlerts BudgetAlert[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@unique([userId, name, type])
+  @@index([userId, type])
+  @@index([userId, status])
+  @@map("categories")
+}
+
+// 🔔 Alertes de budget
+model BudgetAlert {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String          @db.ObjectId
+  type            AlertType
+  sourceType      AlertSource     @default(GLOBAL)
+  categoryId      String?         @db.ObjectId
+  category        Category?       @relation(fields: [categoryId], references: [id])
+  message         String
+  amount          Float?
+  threshold       Float?
+  isRead          Boolean         @default(false)
+  status          RecordStatus    @default(ACTIVE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([userId, status])
+  @@map("budget_alerts")
+}
+
+// 🔐 Tokens de réinitialisation
+model PasswordResetToken {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  user        User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?      @db.ObjectId
+  email       String
+  token       String       @unique
+  status      TokenStatus  @default(PENDING)
+  expiresAt   DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([email])
+  @@index([expiresAt])
+  @@index([status])
+  @@map("password_reset_tokens")
+}
+
+// ==============================
+// ENUMS
+// ==============================
+
+enum TransactionType {
+  REVENUE
+  DEPENSE
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AlertType {
+  BUDGET_DEPASSE       // Budget dépassé
+  SEUIL_ATTEINT        // Seuil atteint
+  DEPENSE_IMPORTANTE   // Dépense importante
+}
+
+enum AlertSource {
+  GLOBAL
+  CATEGORY
+  TRANSACTION
+}
+
+enum RecordStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+  SUSPENDED
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DESACTIVATED
+  DELETED
+}
+
+enum TokenStatus {
+  PENDING
+  USED
+  EXPIRED
+  CANCELLED
 }

@@ -2,9 +2,16 @@
   "name": "backend-money",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "prisma:init": "npx prisma init",
+    "prisma:push": "npx prisma db push",
+    "prisma:generate": "npx prisma generate",
+    "prisma:studio": "npx prisma studio",
+    "db:reset": "npx prisma db push --force-reset && npx prisma generate",
+    "build": "npx prisma generate"
   },
   "repository": {
     "type": "git",
@@ -13,7 +20,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/seydinatCODEKILLER/Backend-Money/issues"
   },
@@ -21,6 +28,7 @@
   "dependencies": {
     "@prisma/client": "^6.18.0",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
