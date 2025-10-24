@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 });
 
 // Routes API
-app.use("/api/v1/transactions", transactionsRoutes);
+app.use("/api/transactions", transactionsRoutes);
 
 // Route 404 — doit être en dernier
 app.use((req, res) => {

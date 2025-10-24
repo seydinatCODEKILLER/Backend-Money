@@ -10,7 +10,7 @@ import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 const router = express.Router();
 const auth = new AuthMiddleware();
 
-// Toutes les routes nécessitent une authentification
+
 router.use(auth.protect());
 
 router.get("/", getTransactions);
