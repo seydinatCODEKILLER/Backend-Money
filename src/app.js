@@ -4,6 +4,7 @@ import responseHandler from "./middlewares/responseMiddleware.js";
 import logger from "./utils/logger.js";
 import { AuthRoute } from "./utils/Router.js";
 import transactionsRoutes from "./routes/transactions.js";
+import categoriesRoutes from "./routes/categories.js";
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.use((req, res, next) => {
 
 app.use("/api/auth", AuthRoute.routes);
 app.use("/api/transactions", transactionsRoutes);
-
+app.use("/api/categories", categoriesRoutes);
 
 // Route par défaut pour vérifier que l'API tourne
 app.get("/", (req, res) => {
@@ -29,7 +30,6 @@ app.get("/", (req, res) => {
 });
 
 // Routes API
-
 
 // Route 404 — doit être en dernier
 app.use((req, res) => {
