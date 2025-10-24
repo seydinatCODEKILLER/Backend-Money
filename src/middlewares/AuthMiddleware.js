@@ -1,4 +1,3 @@
-// middlewares/AuthMiddleware.js
 import TokenGenerator from "../config/jwt.js";
 
 export default class AuthMiddleware {

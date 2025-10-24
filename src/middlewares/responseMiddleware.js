@@ -1,4 +1,3 @@
-// middlewares/responseMiddleware.js
 export class ResponseHandler {
   constructor(config = {}) {
     this.config = {
