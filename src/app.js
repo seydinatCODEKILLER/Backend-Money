@@ -16,10 +16,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// Routes
+import transactionsRoutes from "./routes/transactions.js";
+
 // Route par défaut pour vérifier que l'API tourne
 app.get("/", (req, res) => {
   res.status(200).json({ message: "API is running" });
 });
+
+// Routes API
+app.use("/api/v1/transactions", transactionsRoutes);
 
 // Route 404 — doit être en dernier
 app.use((req, res) => {
