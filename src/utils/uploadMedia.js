@@ -9,9 +9,8 @@ export default class MediaUploader {
     if (!file || typeof file !== "object") return null;
 
     try {
-      const buffer = await file.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
-      const dataUri = `data:${file.type};base64,${base64}`;
+      const base64 = file.buffer.toString("base64");
+      const dataUri = `data:${file.mimetype};base64,${base64}`;
 
       const result = await cloudinary.uploader.upload(dataUri, {
         folder,

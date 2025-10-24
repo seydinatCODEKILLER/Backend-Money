@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import responseHandler from "./middlewares/responseMiddleware.js";
+import logger from "./utils/logger.js";
+import { AuthRoute } from "./utils/Router.js";
 
 const app = express();
 
@@ -12,9 +14,12 @@ app.use(responseHandler);
 
 // Logger middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  logger.info(`${req.method} ${req.originalUrl}`);
   next();
 });
+
+//Route
+app.use("/api/auth", AuthRoute.routes);
 
 // Route par défaut pour vérifier que l'API tourne
 app.get("/", (req, res) => {
