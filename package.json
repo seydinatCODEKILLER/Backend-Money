@@ -33,7 +33,13 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "nodemon": "^3.1.10"
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.10",
+    "nodemon": "^3.1.10",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2",
+    "uuid": "^13.0.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "prisma": "^6.18.0"

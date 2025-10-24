@@ -10,4 +10,11 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_DURATION: process.env.JWT_DURATION,
   HOST: process.env.NODE_ENV === "production" ? process.env.HOST : "localhost",
+  EMAIL_FROM: process.env.EMAIL_FROM,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  SMTP_HOST: process.env.SMTP_HOST || "smtp.gmail.com",
+  SMTP_PORT: process.env.SMTP_PORT || 587,
+  SMTP_SECURE: process.env.SMTP_SECURE || "false",
+  SMTP_USER: process.env.SMTP_USER,
+  SMTP_PASS: process.env.SMTP_PASS,
 };

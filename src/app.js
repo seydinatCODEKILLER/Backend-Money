@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import responseHandler from "./middlewares/responseMiddleware.js";
+import logger from "./utils/logger.js";
+import { AuthRoute } from "./utils/Router.js";
+import transactionsRoutes from "./routes/transactions.js";
 
 const app = express();
 
@@ -12,12 +15,13 @@ app.use(responseHandler);
 
 // Logger middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  logger.info(`${req.method} ${req.originalUrl}`);
   next();
 });
 
-// Routes
-import transactionsRoutes from "./routes/transactions.js";
+app.use("/api/auth", AuthRoute.routes);
+app.use("/api/transactions", transactionsRoutes);
+
 
 // Route par défaut pour vérifier que l'API tourne
 app.get("/", (req, res) => {
@@ -25,7 +29,7 @@ app.get("/", (req, res) => {
 });
 
 // Routes API
-app.use("/api/transactions", transactionsRoutes);
+
 
 // Route 404 — doit être en dernier
 app.use((req, res) => {
