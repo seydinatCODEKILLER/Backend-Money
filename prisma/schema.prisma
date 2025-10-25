@@ -18,22 +18,23 @@ datasource db {
 
 // 👤 Utilisateur
 model User {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  nom            String
-  prenom         String
-  role           Role            @default(USER)
-  email          String          @unique
-  password       String
-  avatarUrl      String?
-  status         UserStatus      @default(ACTIVE)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  nom       String
+  prenom    String
+  role      Role       @default(USER)
+  email     String     @unique
+  password  String
+  avatarUrl String?
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   // Relations
-  transactions   Transaction[]
-  categories     Category[]
-  resetTokens    PasswordResetToken[]
-  budgetAlerts   BudgetAlert[]
+  transactions Transaction[]
+  categories   Category[]
+  resetTokens  PasswordResetToken[]
+  budgetAlerts BudgetAlert[]
+  Report       Report[]
 
   // Index
   @@index([status])
@@ -42,18 +43,18 @@ model User {
 
 // 💰 Transactions (revenus / dépenses)
 model Transaction {
-  id           String            @id @default(auto()) @map("_id") @db.ObjectId
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String            @db.ObjectId
-  type         TransactionType
-  amount       Float
-  category     Category?         @relation(fields: [categoryId], references: [id])
-  categoryId   String?           @db.ObjectId
-  description  String?
-  date         DateTime          @default(now())
-  status       RecordStatus      @default(ACTIVE)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String          @db.ObjectId
+  type        TransactionType
+  amount      Float
+  category    Category?       @relation(fields: [categoryId], references: [id])
+  categoryId  String?         @db.ObjectId
+  description String?
+  date        DateTime        @default(now())
+  status      RecordStatus    @default(ACTIVE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@index([userId, date])
   @@index([userId, type])
@@ -64,20 +65,20 @@ model Transaction {
 
 // 🏷️ Catégories personnalisées
 model Category {
-  id           String            @id @default(auto()) @map("_id") @db.ObjectId
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String            @db.ObjectId
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String          @db.ObjectId
   name         String
   type         TransactionType
   color        String?
   icon         String?
-  isDefault    Boolean           @default(false)
+  isDefault    Boolean         @default(false)
   budgetLimit  Float?
-  status       RecordStatus      @default(ACTIVE)
+  status       RecordStatus    @default(ACTIVE)
   transactions Transaction[]
   budgetAlerts BudgetAlert[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@unique([userId, name, type])
   @@index([userId, type])
@@ -87,20 +88,20 @@ model Category {
 
 // 🔔 Alertes de budget
 model BudgetAlert {
-  id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId          String          @db.ObjectId
-  type            AlertType
-  sourceType      AlertSource     @default(GLOBAL)
-  categoryId      String?         @db.ObjectId
-  category        Category?       @relation(fields: [categoryId], references: [id])
-  message         String
-  amount          Float?
-  threshold       Float?
-  isRead          Boolean         @default(false)
-  status          RecordStatus    @default(ACTIVE)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String       @db.ObjectId
+  type       AlertType
+  sourceType AlertSource  @default(GLOBAL)
+  categoryId String?      @db.ObjectId
+  category   Category?    @relation(fields: [categoryId], references: [id])
+  message    String
+  amount     Float?
+  threshold  Float?
+  isRead     Boolean      @default(false)
+  status     RecordStatus @default(ACTIVE)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
@@ -108,23 +109,43 @@ model BudgetAlert {
   @@map("budget_alerts")
 }
 
+// 📊 Rapports financiers
+model Report {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String       @db.ObjectId
+  title        String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime
+  totalIncome  Float        @default(0)
+  totalExpense Float        @default(0)
+  balance      Float        @default(0)
+  fileUrl      String? // lien vers un PDF ou CSV généré
+  status       RecordStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([userId, startDate, endDate])
+  @@map("reports")
+}
+
 // 🔐 Tokens de réinitialisation
 model PasswordResetToken {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  user        User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String?      @db.ObjectId
-  email       String       @unique
-  token       String       @unique
-  status      TokenStatus  @default(PENDING)
-  expiresAt   DateTime
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  user      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?     @db.ObjectId
+  email     String      @unique
+  token     String      @unique
+  status    TokenStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@index([expiresAt])
   @@index([status])
   @@map("password_reset_tokens")
 }
-
 
 // ==============================
 // ENUMS
@@ -141,9 +162,9 @@ enum Role {
 }
 
 enum AlertType {
-  BUDGET_DEPASSE       // Budget dépassé
-  SEUIL_ATTEINT        // Seuil atteint
-  DEPENSE_IMPORTANTE   // Dépense importante
+  BUDGET_DEPASSE // Budget dépassé
+  SEUIL_ATTEINT // Seuil atteint
+  DEPENSE_IMPORTANTE // Dépense importante
 }
 
 enum AlertSource {

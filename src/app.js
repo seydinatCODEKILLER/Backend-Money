@@ -5,6 +5,8 @@ import logger from "./utils/logger.js";
 import { AuthRoute } from "./utils/Router.js";
 import transactionsRoutes from "./routes/transactions.js";
 import categoriesRoutes from "./routes/categories.js";
+import reportsRoutes from "./routes/reports.js";
+import alertsRoutes from "./routes/alerts.js";
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use((req, res, next) => {
 app.use("/api/auth", AuthRoute.routes);
 app.use("/api/transactions", transactionsRoutes);
 app.use("/api/categories", categoriesRoutes);
+app.use("/api/reports", reportsRoutes);
+app.use("/api/alerts", alertsRoutes);
 
 // Route par défaut pour vérifier que l'API tourne
 app.get("/", (req, res) => {
