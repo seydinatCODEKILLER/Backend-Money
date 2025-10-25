@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import responseHandler from "./middlewares/responseMiddleware.js";
 import logger from "./utils/logger.js";
-import { AuthRoute } from "./utils/Router.js";
+import { AuthRoute, dashboardRoutes } from "./utils/Router.js";
 import transactionsRoutes from "./routes/transactions.js";
 import categoriesRoutes from "./routes/categories.js";
 
@@ -23,6 +23,7 @@ app.use((req, res, next) => {
 app.use("/api/auth", AuthRoute.routes);
 app.use("/api/transactions", transactionsRoutes);
 app.use("/api/categories", categoriesRoutes);
+app.use("/api/dashboard", dashboardRoutes.routes);
 
 // Route par défaut pour vérifier que l'API tourne
 app.get("/", (req, res) => {
