@@ -1,4 +1,7 @@
 import { prisma } from "../config/database.js";
+import AlertService from "../services/AlertService.js";
+
+const alertService = new AlertService();
 
 export const getTransactions = async (req, res) => {
   try {
@@ -12,11 +15,7 @@ export const getTransactions = async (req, res) => {
       limit = 10,
     } = req.query;
 
-    const filters = {
-      userId,
-      status: "ACTIVE",
-    };
-
+    const filters = { userId, status: "ACTIVE" };
     if (type) filters.type = type;
     if (categoryId) filters.categoryId = categoryId;
     if (startDate || endDate) {
@@ -27,9 +26,7 @@ export const getTransactions = async (req, res) => {
 
     const transactions = await prisma.transaction.findMany({
       where: filters,
-      include: {
-        category: true,
-      },
+      include: { category: true },
       skip: (page - 1) * limit,
       take: parseInt(limit),
       orderBy: { date: "desc" },
@@ -56,9 +53,7 @@ export const createTransaction = async (req, res) => {
     const userId = req.user.id;
     const { type, amount, categoryId, description, date } = req.body;
 
-    if (!type || !amount) {
-      return res.error("Type et montant sont requis", 400);
-    }
+    if (!type || !amount) return res.error("Type et montant sont requis", 400);
 
     const transaction = await prisma.transaction.create({
       data: {
@@ -69,10 +64,15 @@ export const createTransaction = async (req, res) => {
         description,
         date: date ? new Date(date) : new Date(),
       },
-      include: {
-        category: true,
-      },
+      include: { category: true },
     });
+
+    // -------------------------------
+    // GÉNÉRATION AUTOMATIQUE D'ALERTES
+    // -------------------------------
+    if (type === "DEPENSE") {
+      await alertService.generateAutomaticAlerts(userId);
+    }
 
     res.success(transaction, "Transaction créée avec succès", 201);
   } catch (error) {
@@ -90,9 +90,7 @@ export const updateTransaction = async (req, res) => {
       where: { id, userId, status: "ACTIVE" },
     });
 
-    if (!transaction) {
-      return res.error("Transaction non trouvée", 404);
-    }
+    if (!transaction) return res.error("Transaction non trouvée", 404);
 
     const updatedTransaction = await prisma.transaction.update({
       where: { id },
@@ -103,10 +101,15 @@ export const updateTransaction = async (req, res) => {
         description,
         date: date ? new Date(date) : undefined,
       },
-      include: {
-        category: true,
-      },
+      include: { category: true },
     });
+
+    // -------------------------------
+    // GÉNÉRATION AUTOMATIQUE D'ALERTES
+    // -------------------------------
+    if ((type || transaction.type) === "DEPENSE") {
+      await alertService.generateAutomaticAlerts(userId);
+    }
 
     res.success(updatedTransaction, "Transaction mise à jour avec succès");
   } catch (error) {
@@ -123,9 +126,7 @@ export const deleteTransaction = async (req, res) => {
       where: { id, userId, status: "ACTIVE" },
     });
 
-    if (!transaction) {
-      return res.error("Transaction non trouvée", 404);
-    }
+    if (!transaction) return res.error("Transaction non trouvée", 404);
 
     await prisma.transaction.update({
       where: { id },
