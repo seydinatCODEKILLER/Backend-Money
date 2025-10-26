@@ -7,8 +7,12 @@ import transactionsRoutes from "./routes/transactions.js";
 import categoriesRoutes from "./routes/categories.js";
 import reportsRoutes from "./routes/reports.js";
 import alertsRoutes from "./routes/alerts.js";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+import { swaggerOptions } from "./config/swagger.js";
 
 const app = express();
+const specs = swaggerJSDoc(swaggerOptions);
 
 // Middlewares globaux
 app.use(express.json());
@@ -29,6 +33,7 @@ app.use("/api/reports", reportsRoutes);
 app.use("/api/alerts", alertsRoutes);
 app.use("/api/dashboard", dashboardRoutes.routes);
 app.use("/api/alerts", alertRoutes.routes);
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Route par défaut pour vérifier que l'API tourne
 app.get("/", (req, res) => {
