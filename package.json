@@ -27,6 +27,7 @@
   "homepage": "https://github.com/seydinatCODEKILLER/Backend-Money#readme",
   "dependencies": {
     "@prisma/client": "^6.18.0",
+    "@sendinblue/client": "^3.3.1",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",

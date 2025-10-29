@@ -1,35 +1,32 @@
-import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
+import SibApiV3Sdk from "@sendinblue/client";
 
 export default class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: env.SMTP_HOST,
-      port: env.SMTP_PORT,
-      secure: env.SMTP_SECURE === "true", // true for 465, false for other ports
-      auth: {
-        user: env.SMTP_USER,
-        pass: env.SMTP_PASS,
-      },
-    });
+    // Configuration de l'API Brevo
+    this.client = new SibApiV3Sdk.TransactionalEmailsApi();
+    this.client.setApiKey(
+      SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+      env.BREVO_API_KEY
+    );
   }
 
   async sendPasswordResetEmail(email, resetToken) {
     try {
       const resetLink = `${env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-      const mailOptions = {
-        from: env.EMAIL_FROM,
-        to: email,
+      const sendSmtpEmail = {
+        to: [{ email }],
+        sender: { email: env.EMAIL_FROM, name: "MoneyWise" },
         subject: "Réinitialisation de votre mot de passe - MoneyWise",
-        html: this.getPasswordResetTemplate(resetLink),
+        htmlContent: this.getPasswordResetTemplate(resetLink),
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const response = await this.client.sendTransacEmail(sendSmtpEmail);
 
       console.log(`✅ Email de réinitialisation envoyé à: ${email}`);
       console.log(`🔗 Lien: ${resetLink}`);
-      console.log(`📨 Message ID: ${info.messageId}`);
+      console.log(`📨 ID de message: ${response.messageId}`);
 
       return true;
     } catch (error) {
@@ -40,17 +37,17 @@ export default class EmailService {
 
   async sendWelcomeEmail(email, userName) {
     try {
-      const mailOptions = {
-        from: env.EMAIL_FROM,
-        to: email,
+      const sendSmtpEmail = {
+        to: [{ email }],
+        sender: { email: env.EMAIL_FROM, name: "MoneyWise" },
         subject: "Bienvenue sur MoneyWise !",
-        html: this.getWelcomeTemplate(userName),
+        htmlContent: this.getWelcomeTemplate(userName),
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const response = await this.client.sendTransacEmail(sendSmtpEmail);
 
       console.log(`✅ Email de bienvenue envoyé à: ${email}`);
-      console.log(`📨 Message ID: ${info.messageId}`);
+      console.log(`📨 ID de message: ${response.messageId}`);
       return true;
     } catch (error) {
       console.error(
@@ -63,37 +60,25 @@ export default class EmailService {
 
   async sendPasswordChangedEmail(email, userName) {
     try {
-      const mailOptions = {
-        from: env.EMAIL_FROM,
-        to: email,
+      const sendSmtpEmail = {
+        to: [{ email }],
+        sender: { email: env.EMAIL_FROM, name: "MoneyWise" },
         subject: "Votre mot de passe a été modifié - MoneyWise",
-        html: this.getPasswordChangedTemplate(userName),
+        htmlContent: this.getPasswordChangedTemplate(userName),
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const response = await this.client.sendTransacEmail(sendSmtpEmail);
 
       console.log(
         `✅ Email de confirmation de changement de mot de passe envoyé à: ${email}`
       );
-      console.log(`📨 Message ID: ${info.messageId}`);
+      console.log(`📨 ID de message: ${response.messageId}`);
       return true;
     } catch (error) {
       console.error(
         "❌ Erreur lors de l'envoi de l'email de confirmation:",
         error
       );
-      return false;
-    }
-  }
-
-  // Test de connexion SMTP
-  async verifyConnection() {
-    try {
-      await this.transporter.verify();
-      console.log("✅ Connexion SMTP établie avec succès");
-      return true;
-    } catch (error) {
-      console.error("❌ Erreur de connexion SMTP:", error);
       return false;
     }
   }

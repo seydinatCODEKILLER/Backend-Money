@@ -17,4 +17,5 @@ export const env = {
   SMTP_SECURE: process.env.SMTP_SECURE || "false",
   SMTP_USER: process.env.SMTP_USER,
   SMTP_PASS: process.env.SMTP_PASS,
+  BREVO_API_KEY: process.env.BREVO_API_KEY
 };
