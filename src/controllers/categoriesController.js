@@ -3,23 +3,34 @@ import { prisma } from "../config/database.js";
 export const getCategories = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { type, page = 1, limit = 10, search } = req.query;
+    const { type, page = 1, limit = 10, search, status = "ACTIVE" } = req.query;
 
     const filters = {
       userId,
-      status: "ACTIVE",
     };
+
+    // Filtre par statut
+    if (status !== "ALL") {
+      filters.status = status;
+    }
 
     if (type) filters.type = type;
 
+    // Ajout du filtre de recherche
     if (search) {
       filters.OR = [
         {
           name: {
             contains: search,
-            mode: 'insensitive'
-          }
-        }
+            mode: "insensitive",
+          },
+        },
+        {
+          icon: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
       ];
     }
 
@@ -28,6 +39,13 @@ export const getCategories = async (req, res) => {
       skip: (page - 1) * limit,
       take: parseInt(limit),
       orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: {
+            transactions: true,
+          },
+        },
+      },
     });
 
     const total = await prisma.category.count({ where: filters });
