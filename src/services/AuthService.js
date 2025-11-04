@@ -15,7 +15,7 @@ export default class AuthService {
   }
 
   async register(userData) {
-    const { nom, prenom, email, password, avatarFile } = userData;
+    const { nom, prenom, email, password, avatarFile, onboardingData } = userData;
 
     // Vérification si l'email existe déjà
     const existingUser = await prisma.user.findUnique({
@@ -61,6 +61,10 @@ export default class AuthService {
           createdAt: true,
         },
       });
+
+      if (onboardingData?.financialGoals) {
+        await this.createDefaultCategories(user.id, onboardingData);
+      }
 
       // Génération du token JWT
       const token = this.tokenGenerator.sign({
@@ -317,5 +321,61 @@ export default class AuthService {
       }
       throw error;
     }
+  }
+
+  async createDefaultCategories(userId, onboardingData) {
+    const defaultCategories = [
+      // Catégories de base
+      {
+        name: "Alimentation",
+        type: "DEPENSE",
+        color: "#EF4444",
+        icon: "🍎",
+        budgetLimit: onboardingData.foodBudget || 300,
+      },
+      {
+        name: "Transport",
+        type: "DEPENSE",
+        color: "#3B82F6",
+        icon: "🚗",
+        budgetLimit: onboardingData.transportBudget || 150,
+      },
+      {
+        name: "Loisirs",
+        type: "DEPENSE",
+        color: "#8B5CF6",
+        icon: "🎮",
+        budgetLimit: onboardingData.entertainmentBudget || 100,
+      },
+      {
+        name: "Logement",
+        type: "DEPENSE",
+        color: "#F59E0B",
+        icon: "🏠",
+        budgetLimit: onboardingData.housingBudget || 500,
+      },
+      {
+        name: "Salaire",
+        type: "REVENUE",
+        color: "#10B981",
+        icon: "💰",
+        budgetLimit: null,
+      },
+      {
+        name: "Investissements",
+        type: "REVENUE",
+        color: "#06B6D4",
+        icon: "📈",
+        budgetLimit: null,
+      },
+    ];
+
+    await prisma.category.createMany({
+      data: defaultCategories.map((cat) => ({
+        ...cat,
+        userId,
+        isDefault: true,
+      })),
+    });
   }
 }
