@@ -3,7 +3,7 @@ import { prisma } from "../config/database.js";
 export const getCategories = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { type, page = 1, limit = 10 } = req.query;
+    const { type, page = 1, limit = 10, search } = req.query;
 
     const filters = {
       userId,
@@ -11,6 +11,17 @@ export const getCategories = async (req, res) => {
     };
 
     if (type) filters.type = type;
+
+    if (search) {
+      filters.OR = [
+        {
+          name: {
+            contains: search,
+            mode: 'insensitive'
+          }
+        }
+      ];
+    }
 
     const categories = await prisma.category.findMany({
       where: filters,
@@ -149,5 +160,47 @@ export const deleteCategory = async (req, res) => {
     res.success(null, "Catégorie supprimée avec succès");
   } catch (error) {
     res.error("Erreur lors de la suppression de la catégorie", 500);
+  }
+};
+
+export const restoreCategory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const category = await prisma.category.findFirst({
+      where: { id, userId, status: "DELETED" },
+    });
+
+    if (!category) {
+      return res.error("Catégorie supprimée non trouvée", 404);
+    }
+
+    // Vérifier s'il existe déjà une catégorie active avec le même nom et type
+    const existingActiveCategory = await prisma.category.findFirst({
+      where: {
+        userId,
+        name: category.name,
+        type: category.type,
+        status: "ACTIVE",
+        id: { not: id },
+      },
+    });
+
+    if (existingActiveCategory) {
+      return res.error(
+        "Impossible de restaurer : une catégorie active avec le même nom et type existe déjà",
+        400
+      );
+    }
+
+    const restoredCategory = await prisma.category.update({
+      where: { id },
+      data: { status: "ACTIVE" },
+    });
+
+    res.success(restoredCategory, "Catégorie restaurée avec succès");
+  } catch (error) {
+    res.error("Erreur lors de la restauration de la catégorie", 500);
   }
 };
