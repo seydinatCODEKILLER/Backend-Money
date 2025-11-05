@@ -5,6 +5,7 @@ import {
   createTransaction,
   updateTransaction,
   deleteTransaction,
+  restoreTransaction,
 } from "../controllers/transactionsController.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 
@@ -243,5 +244,7 @@ router.put("/:id", updateTransaction);
  *               $ref: '#/components/schemas/Error'
  */
 router.delete("/:id", deleteTransaction);
+
+router.patch("/:id/restore", restoreTransaction);
 
 export default router;

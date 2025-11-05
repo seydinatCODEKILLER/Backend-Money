@@ -1,3 +1,4 @@
+// controllers/transaction.controller.js
 import { prisma } from "../config/database.js";
 import AlertService from "../services/AlertService.js";
 
@@ -13,9 +14,17 @@ export const getTransactions = async (req, res) => {
       endDate,
       page = 1,
       limit = 10,
+      search,
+      status = "ACTIVE",
     } = req.query;
 
-    const filters = { userId, status: "ACTIVE" };
+    const filters = { userId };
+
+    // Filtre par statut
+    if (status !== "ALL") {
+      filters.status = status;
+    }
+
     if (type) filters.type = type;
     if (categoryId) filters.categoryId = categoryId;
     if (startDate || endDate) {
@@ -24,9 +33,38 @@ export const getTransactions = async (req, res) => {
       if (endDate) filters.date.lte = new Date(endDate);
     }
 
+    // Filtre de recherche
+    if (search) {
+      filters.OR = [
+        {
+          description: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          category: {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+        },
+      ];
+    }
+
     const transactions = await prisma.transaction.findMany({
       where: filters,
-      include: { category: true },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            icon: true,
+          },
+        },
+      },
       skip: (page - 1) * limit,
       take: parseInt(limit),
       orderBy: { date: "desc" },
@@ -60,16 +98,23 @@ export const createTransaction = async (req, res) => {
         userId,
         type,
         amount: parseFloat(amount),
-        categoryId,
-        description,
+        categoryId: categoryId || null,
+        description: description || null,
         date: date ? new Date(date) : new Date(),
       },
-      include: { category: true },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            icon: true,
+          },
+        },
+      },
     });
 
-    // -------------------------------
-    // GÉNÉRATION AUTOMATIQUE D'ALERTES
-    // -------------------------------
+    // Génération automatique d'alertes pour les dépenses
     if (type === "DEPENSE") {
       await alertService.generateAutomaticAlerts(userId);
     }
@@ -87,7 +132,7 @@ export const updateTransaction = async (req, res) => {
     const { type, amount, categoryId, description, date } = req.body;
 
     const transaction = await prisma.transaction.findFirst({
-      where: { id, userId, status: "ACTIVE" },
+      where: { id, userId },
     });
 
     if (!transaction) return res.error("Transaction non trouvée", 404);
@@ -97,16 +142,23 @@ export const updateTransaction = async (req, res) => {
       data: {
         type,
         amount: amount ? parseFloat(amount) : undefined,
-        categoryId,
-        description,
+        categoryId: categoryId || null,
+        description: description || null,
         date: date ? new Date(date) : undefined,
       },
-      include: { category: true },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            icon: true,
+          },
+        },
+      },
     });
 
-    // -------------------------------
-    // GÉNÉRATION AUTOMATIQUE D'ALERTES
-    // -------------------------------
+    // Régénération des alertes si c'est une dépense
     if ((type || transaction.type) === "DEPENSE") {
       await alertService.generateAutomaticAlerts(userId);
     }
@@ -123,7 +175,7 @@ export const deleteTransaction = async (req, res) => {
     const { id } = req.params;
 
     const transaction = await prisma.transaction.findFirst({
-      where: { id, userId, status: "ACTIVE" },
+      where: { id, userId },
     });
 
     if (!transaction) return res.error("Transaction non trouvée", 404);
@@ -136,5 +188,45 @@ export const deleteTransaction = async (req, res) => {
     res.success(null, "Transaction supprimée avec succès");
   } catch (error) {
     res.error("Erreur lors de la suppression de la transaction", 500);
+  }
+};
+
+// Nouvelle méthode pour restaurer une transaction
+export const restoreTransaction = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const transaction = await prisma.transaction.findFirst({
+      where: { id, userId, status: "DELETED" },
+    });
+
+    if (!transaction) {
+      return res.error("Transaction supprimée non trouvée", 404);
+    }
+
+    const restoredTransaction = await prisma.transaction.update({
+      where: { id },
+      data: { status: "ACTIVE" },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            icon: true,
+          },
+        },
+      },
+    });
+
+    // Régénération des alertes si c'est une dépense
+    if (transaction.type === "DEPENSE") {
+      await alertService.generateAutomaticAlerts(userId);
+    }
+
+    res.success(restoredTransaction, "Transaction restaurée avec succès");
+  } catch (error) {
+    res.error("Erreur lors de la restauration de la transaction", 500);
   }
 };
