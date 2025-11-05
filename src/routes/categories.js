@@ -5,6 +5,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  restoreCategory,
 } from "../controllers/categoriesController.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 
@@ -228,5 +229,49 @@ router.put("/:id", updateCategory);
  *               $ref: '#/components/schemas/Error'
  */
 router.delete("/:id", deleteCategory);
+
+/**
+ * @swagger
+ * /api/categories/{id}/restore:
+ *   patch:
+ *     summary: Restaurer une catégorie supprimée
+ *     tags: [Categories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la catégorie à restaurer
+ *     responses:
+ *       200:
+ *         description: Catégorie restaurée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Success'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/Category'
+ *       401:
+ *         description: Non authentifié
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Catégorie non trouvée ou déjà active
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+router.patch("/:id/restore", restoreCategory);
+
 
 export default router;
