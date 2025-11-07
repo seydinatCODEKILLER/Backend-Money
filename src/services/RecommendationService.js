@@ -158,7 +158,7 @@ export default class RecommendationService {
 
   async getUserRecommendations(userId, { page = 1, pageSize = 9, type }) {
   page = Number(page);
-  limit = Number(pageSize);
+  let limit = Number(pageSize);
 
   const skip = (page - 1) * limit;
 
