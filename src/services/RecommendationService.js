@@ -156,43 +156,41 @@ export default class RecommendationService {
     return saved;
   }
 
-  async getUserRecommendations(userId, filters = {}) {
-    const {
-      type,
-      page = 1,
-      pageSize = 10,
-      sortBy = "createdAt",
-      sortOrder = "desc",
-    } = filters;
-    const where = { userId };
-    if (type) where.type = type;
-    const skip = (page - 1) * pageSize;
+  async getUserRecommendations(userId, { page = 1, limit = 9, type }) {
+  page = Number(page);
+  limit = Number(limit);
 
-    const [recommendations, total] = await Promise.all([
-      prisma.financialRecommendation.findMany({
-        where,
-        include: {
-          category: {
-            select: { id: true, name: true, color: true, icon: true },
-          },
-        },
-        orderBy: { [sortBy]: sortOrder },
-        skip,
-        take: parseInt(pageSize),
-      }),
-      prisma.financialRecommendation.count({ where }),
-    ]);
+  const skip = (page - 1) * limit;
 
-    return {
-      recommendations,
-      pagination: {
-        total,
-        page: parseInt(page),
-        pageSize: parseInt(pageSize),
-        totalPages: Math.ceil(total / pageSize),
+  const where = {
+    userId,
+    ...(type && type.trim() !== "" ? { type } : {})
+  };
+
+  const [recommendations, total] = await Promise.all([
+    prisma.financialRecommendation.findMany({
+      where,
+      include: {
+        category: true,
       },
-    };
-  }
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.financialRecommendation.count({ where }),
+  ]);
+
+  return {
+    recommendations,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+    },
+  };
+}
+
 
   async markRecommendationAsRead(userId, recommendationId) {
     const recommendation = await prisma.financialRecommendation.findFirst({
