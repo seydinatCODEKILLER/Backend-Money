@@ -6,7 +6,6 @@ export default class RecommendationController {
     this.service = new RecommendationService();
   }
 
-  // GET /api/v1/recommendations - Liste des recommandations
   async getRecommendations(req, res) {
     try {
       const userId = req.user.id;
@@ -21,7 +20,6 @@ export default class RecommendationController {
     }
   }
 
-  // POST /api/v1/recommendations/generate - Générer de nouvelles recommandations
   async generateRecommendations(req, res) {
     try {
       const userId = req.user.id;
@@ -42,7 +40,6 @@ export default class RecommendationController {
     }
   }
 
-  // DELETE /api/v1/recommendations/:id - Supprimer une recommandation
   async deleteRecommendation(req, res) {
     try {
       const userId = req.user.id;

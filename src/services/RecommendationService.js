@@ -190,4 +190,19 @@ export default class RecommendationService {
     }
     return saved;
   }
+
+  //-------------------Marquer comme lue ---------------
+  async markRecommendationAsRead(userId, recommendationId) {
+    const recommendation = await prisma.financialRecommendation.findFirst({
+      where: { id: recommendationId, userId }
+    });
+
+    if (!recommendation) {
+      throw new Error("Recommandation non trouvée");
+    }
+
+    return await prisma.financialRecommendation.delete({
+      where: { id: recommendationId }
+    });
+  }
 }
