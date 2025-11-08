@@ -53,6 +53,54 @@ export default class RecommendationService {
     }
   }
 
+  // ------------------ Récupération des recommandations utilisateur ------------------
+  async getUserRecommendations(userId, { page = 1, pageSize = 9, type }) {
+    console.log("📥 [getUserRecommendations] userId:", userId, "filters:", {
+      page,
+      pageSize,
+      type,
+    });
+
+    page = Number(page);
+    const limit = Number(pageSize);
+    const skip = (page - 1) * limit;
+
+    const where = {
+      userId,
+      ...(type && type.trim() !== "" ? { type } : {}),
+    };
+
+    try {
+      const [recommendations, total] = await Promise.all([
+        prisma.financialRecommendation.findMany({
+          where,
+          include: { category: true },
+          skip,
+          take: limit,
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.financialRecommendation.count({ where }),
+      ]);
+
+      console.log(
+        `✅ [getUserRecommendations] Retour de ${recommendations.length} résultats sur ${total}`
+      );
+
+      return {
+        recommendations,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      };
+    } catch (err) {
+      console.error("❌ [DB ERROR] getUserRecommendations:", err);
+      throw err;
+    }
+  }
+
   // ------------------ Données utilisateur ------------------
   async getUserFinancialData(userId) {
     console.log("🔍 [Recommendation] Récupération données financières...");
