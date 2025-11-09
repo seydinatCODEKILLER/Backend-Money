@@ -1,4 +1,3 @@
-// controllers/transaction.controller.js
 import { prisma } from "../config/database.js";
 import AlertService from "../services/AlertService.js";
 
@@ -192,7 +191,6 @@ export const deleteTransaction = async (req, res) => {
   }
 };
 
-// Nouvelle méthode pour restaurer une transaction
 export const restoreTransaction = async (req, res) => {
   try {
     const userId = req.user.id;
