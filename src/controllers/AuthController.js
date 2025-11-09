@@ -115,4 +115,20 @@ export default class AuthController {
       return res.error(error.message, 400);
     }
   }
+
+  async updateAIPrivilege(req, res) {
+    try {
+      const { userId, canUseAI } = req.body;
+
+      if (!userId || typeof canUseAI !== "boolean") {
+        return res.error("Paramètres invalides", 400);
+      }
+
+      const result = await this.service.updateAIPrivilege(userId, canUseAI);
+
+      return res.success(result, result.message);
+    } catch (error) {
+      return res.error(error.message, 400);
+    }
+  }
 }

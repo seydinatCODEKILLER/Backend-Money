@@ -287,6 +287,8 @@ export default class AuthRoutes {
      *               $ref: '#/components/schemas/Error'
      */
     this.router.put("/profile", this.authMiddleware.protect(), upload.single('avatar'), (req, res) => this.controller.updateProfile(req, res));
+
+    this.router.patch("/ai-access", this.authMiddleware.protect() , (req, res) => this.controller.updateAIPrivilege(req, res));
   }
 
   get routes() {

@@ -28,6 +28,7 @@ model User {
   status    UserStatus @default(ACTIVE)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  canUseAI  Boolean    @default(false)
 
   // Relations
   transactions           Transaction[]

@@ -1,8 +1,7 @@
-// routes/ChatRoutes.js
 import express from "express";
 import ChatController from "../controllers/ChatController.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
-import { allowOnlyOneUserForAI } from "../middlewares/limitAIUsage.js";
+import { requireAIPrivilege } from "../middlewares/limitAIUsage.js";
 
 export default class ChatRoutes {
   constructor() {
@@ -55,7 +54,7 @@ export default class ChatRoutes {
      *       401:
      *         description: Non authentifié
      */
-    this.router.post("/messages", this.authMiddleware.protect(),allowOnlyOneUserForAI, (req, res) =>
+    this.router.post("/messages", this.authMiddleware.protect(),requireAIPrivilege, (req, res) =>
       this.controller.sendMessage(req, res)
     );
 
@@ -92,8 +91,11 @@ export default class ChatRoutes {
      *       401:
      *         description: Non authentifié
      */
-    this.router.get("/messages", this.authMiddleware.protect(),allowOnlyOneUserForAI, (req, res) =>
-      this.controller.getChatHistory(req, res)
+    this.router.get(
+      "/messages",
+      this.authMiddleware.protect(),
+      requireAIPrivilege,
+      (req, res) => this.controller.getChatHistory(req, res)
     );
 
     /**
@@ -122,8 +124,11 @@ export default class ChatRoutes {
      *       401:
      *         description: Non authentifié
      */
-    this.router.delete("/messages", this.authMiddleware.protect(),allowOnlyOneUserForAI, (req, res) =>
-      this.controller.clearChatHistory(req, res)
+    this.router.delete(
+      "/messages",
+      this.authMiddleware.protect(),
+      requireAIPrivilege,
+      (req, res) => this.controller.clearChatHistory(req, res)
     );
   }
 

@@ -91,7 +91,8 @@ export const createTransaction = async (req, res) => {
     const userId = req.user.id;
     const { type, amount, categoryId, description, date } = req.body;
 
-    if (!type || !amount) return res.error("Type et montant sont requis", 400);
+    if (!type) return res.error("Type est requis", 400);
+    if (!amount) return res.error("le montant est requis", 400);
 
     const transaction = await prisma.transaction.create({
       data: {

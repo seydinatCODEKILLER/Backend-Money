@@ -378,4 +378,35 @@ export default class AuthService {
       })),
     });
   }
+
+    async updateAIPrivilege(userId, canUseAI) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new Error("Utilisateur non trouvé");
+    }
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { canUseAI },
+      select: {
+        id: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        role: true,
+        avatarUrl: true,
+        status: true,
+        canUseAI: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      message: `Accès IA ${canUseAI ? "activé" : "désactivé"} pour cet utilisateur`,
+      user: updatedUser,
+    };
+  }
+
 }

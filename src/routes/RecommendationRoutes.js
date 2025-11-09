@@ -1,8 +1,6 @@
-// routes/RecommendationRoutes.js
 import express from "express";
 import RecommendationController from "../controllers/RecommendationController.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
-import { allowOnlyOneUserForAI } from "../middlewares/limitAIUsage.js";
 
 export default class RecommendationRoutes {
   constructor() {
@@ -52,7 +50,7 @@ export default class RecommendationRoutes {
      *       401:
      *         description: Non authentifié
      */
-    this.router.get("/", this.authMiddleware.protect(),allowOnlyOneUserForAI, (req, res) =>
+    this.router.get("/", this.authMiddleware.protect(), (req, res) =>
       this.controller.getRecommendations(req, res)
     );
 
@@ -86,7 +84,7 @@ export default class RecommendationRoutes {
      *       401:
      *         description: Non authentifié
      */
-    this.router.post("/generate", this.authMiddleware.protect(),allowOnlyOneUserForAI, (req, res) =>
+    this.router.post("/generate", this.authMiddleware.protect(), (req, res) =>
       this.controller.generateRecommendations(req, res)
     );
 
@@ -113,7 +111,7 @@ export default class RecommendationRoutes {
      *       404:
      *         description: Recommandation non trouvée
      */
-    this.router.delete("/:id", this.authMiddleware.protect(),allowOnlyOneUserForAI, (req, res) =>
+    this.router.delete("/:id", this.authMiddleware.protect(), (req, res) =>
       this.controller.deleteRecommendation(req, res)
     );
   }

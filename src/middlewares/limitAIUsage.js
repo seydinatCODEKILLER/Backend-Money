@@ -1,15 +1,16 @@
-import { env } from "../config/env.js";
+export function requireAIPrivilege(req, res, next) {
+  const user = req.user;
 
-export function allowOnlyOneUserForAI(req, res, next) {
-  const userId = req.user?.id;
-
-  if (!userId) {
+  if (!user) {
     return res.status(401).json({ message: "Non authentifié." });
   }
 
-  if (userId !== env.ALLOWED_AI_USER_ID) {
-    return res.status(403).json( { message: "L'accès à l'IA est limité pour le moment. Revenez plus tard."});
+  if (!user.canUseAI) {
+    return res.status(403).json({
+      message: "Vous n'avez pas accès à cette fonctionnalité IA."
+    });
   }
 
   next();
 }
+
