@@ -130,6 +130,7 @@ export default class AuthService {
       role: user.role,
       avatarUrl: user.avatarUrl,
       status: user.status,
+      canUseAI: user.canUseAI,
       createdAt: user.createdAt,
     };
 
@@ -251,6 +252,7 @@ export default class AuthService {
         avatarUrl: true,
         status: true,
         createdAt: true,
+        canUseAI: true,
         updatedAt: true,
       },
     });
@@ -304,6 +306,7 @@ export default class AuthService {
           avatarUrl: true,
           status: true,
           createdAt: true,
+          canUseAI: true,
           updatedAt: true,
         },
       });
@@ -379,7 +382,7 @@ export default class AuthService {
     });
   }
 
-    async updateAIPrivilege(userId, canUseAI) {
+  async updateAIPrivilege(userId, canUseAI) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -408,5 +411,4 @@ export default class AuthService {
       user: updatedUser,
     };
   }
-
 }
