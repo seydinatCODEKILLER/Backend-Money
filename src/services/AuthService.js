@@ -71,6 +71,7 @@ export default class AuthService {
         id: user.id,
         email: user.email,
         role: user.role,
+        canUseAI: user.canUseAI
       });
 
       // Envoi de l'email de bienvenue (non bloquant)
@@ -96,29 +97,24 @@ export default class AuthService {
   }
 
   async login(email, password) {
-    // Recherche de l'utilisateur
     const user = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (!user) {
-      throw new Error("Email ou mot de passe incorrect");
-    }
+    if (!user) throw new Error("Email ou mot de passe incorrect");
 
-    // Vérification du mot de passe
     const isPasswordValid = await this.passwordHasher.compare(
       password,
       user.password
     );
-    if (!isPasswordValid) {
-      throw new Error("Email ou mot de passe incorrect");
-    }
 
-    // Génération du token JWT
+    if (!isPasswordValid) throw new Error("Email ou mot de passe incorrect");
+
     const token = this.tokenGenerator.sign({
       id: user.id,
       email: user.email,
       role: user.role,
+      canUseAI: user.canUseAI
     });
 
     // Données utilisateur sans le mot de passe
